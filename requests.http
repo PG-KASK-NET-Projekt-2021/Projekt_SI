@@ -1,0 +1,11 @@
+GET http://localhost/api/sensor
+
+###
+POST http://localhost/api/sensor
+Content-Type: application/json
+
+{
+  "sensorId": 1,
+  "sensorType": 2,
+  "value": 132
+}

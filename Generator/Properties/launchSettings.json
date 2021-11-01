@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "Generator": {
+      "commandName": "Project",
+      "commandLineArgs": "20 50 55 60 45 5"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}
