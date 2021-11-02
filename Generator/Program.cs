@@ -67,7 +67,7 @@ namespace Generator
     {
         public static void postSensorData(int sensorId,int sensorType)
         {
-            var httpWebRequest = (HttpWebRequest)WebRequest.Create("http://localhost/api/sensor");
+            var httpWebRequest = (HttpWebRequest)WebRequest.Create("http://api/api/sensor");
             httpWebRequest.ContentType = "application/json";
             httpWebRequest.Method = "POST";
             Random random = new Random();
