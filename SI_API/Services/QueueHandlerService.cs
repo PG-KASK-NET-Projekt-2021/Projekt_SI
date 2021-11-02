@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using MQTTnet;
@@ -21,12 +22,14 @@ namespace SI_API.Services
         private int waitTime = 2000;
         private const string ServerName = "queue";
         private const int ServerPort = 1883;
+        private readonly Memory _mem;
 
-        public QueueHandlerService(ILogger<QueueHandlerService> logger)
+        public QueueHandlerService(ILogger<QueueHandlerService> logger, Memory mem)
         {
             _logger = logger;
-            mqttFactory = new MqttFactory();
+            _mem = mem;
             
+            mqttFactory = new MqttFactory();
             mqttClient = mqttFactory.CreateMqttClient();
             
             mqttClient.UseConnectedHandler(async e =>
@@ -38,6 +41,9 @@ namespace SI_API.Services
 
             mqttClient.UseApplicationMessageReceivedHandler(e =>
             {
+                SensorData data =
+                    JsonSerializer.Deserialize<SensorData>($"{Encoding.UTF8.GetString(e.ApplicationMessage.Payload)}");
+                _mem.Add(data);
                 Console.WriteLine("### RECEIVED APPLICATION MESSAGE ###");
                 Console.WriteLine($"+ Topic = {e.ApplicationMessage.Topic}");
                 Console.WriteLine($"+ Payload = {Encoding.UTF8.GetString(e.ApplicationMessage.Payload)}");
@@ -57,12 +63,6 @@ namespace SI_API.Services
                 .Build();
             await mqttClient.ConnectAsync(options, CancellationToken.None);
             _logger.LogDebug("Connected");
-            
-            while (!stoppingToken.IsCancellationRequested)
-            {
-                await Task.Delay(waitTime);
-            }
-            _logger.LogDebug("QueueHandler Stopping.");
         }
     }
 }

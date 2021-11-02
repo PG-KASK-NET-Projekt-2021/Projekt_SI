@@ -14,11 +14,11 @@ services:
       - queue
   back:
     build: SI_API
+    ports:
+      - "81:80"
     depends_on:
       - queue
   gen:
     build: Generator
-    ports:
-     - "81:80"
     depends_on:
       - api
