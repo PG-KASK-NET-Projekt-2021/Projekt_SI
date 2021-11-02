@@ -22,7 +22,7 @@ namespace Generator
         static void Main(string[] args)
         {
     
-            int numberOfSensors = 1;
+            int numberOfSensors = 30;
             int delayOnX =50;
             int delayOnY =  55;
             int delayOnZ =  60;
