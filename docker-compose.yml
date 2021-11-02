@@ -9,7 +9,6 @@ services:
     build: si
     ports:
       - "80:80"
-      - "1883:1883"
     depends_on:
       - queue
   back:
@@ -18,6 +17,12 @@ services:
       - "81:80"
     depends_on:
       - queue
+  gui:
+    build: gui
+    ports:
+      - "82:80"
+    depends_on:
+      - back
   gen:
     build: Generator
     depends_on:

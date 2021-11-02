@@ -1,0 +1,29 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Sensors";
+
+    var client = new HttpClient();
+    var streamTask = client.GetStreamAsync("http://back/api/SensorData");
+    var sensors = await JsonSerializer.DeserializeAsync<List<SensorQueueData>>(await streamTask);
+}
+
+<div class="text-center">
+    <table style="margin: auto">
+        <tr>
+            <th>Sensor Type</th>
+            <th>Sensor ID</th>
+            <th>Date</th>
+            <th>Value</th>
+        </tr>
+        @foreach (var sensor in sensors)
+        {
+            <tr>
+                <td>@sensor.SensorType</td>
+                <td>@sensor.SensorId</td>
+                <td>@sensor.Date.Hour:@sensor.Date.Minute:@sensor.Date.Second</td>
+                <td>@sensor.Value</td>
+            </tr>
+        }
+    </table>
+</div>
