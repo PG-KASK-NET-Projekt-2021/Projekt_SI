@@ -1,22 +1,22 @@
 version: "3.9"
    
 services:
+  mongo:
+    image: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: pG956trBF4a5
   queue:
     image: eclipse-mosquitto
     volumes:
       - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
-  api:
-    build: si
-    ports:
-      - "80:80"
-    depends_on:
-      - queue
   back:
     build: SI_API
     ports:
       - "81:80"
     depends_on:
       - queue
+      - mongo
   gui:
     build: gui
     ports:
@@ -26,4 +26,4 @@ services:
   gen:
     build: Generator
     depends_on:
-      - api
+      - back
