@@ -46,9 +46,9 @@ namespace Generator
         {
     
             int numberOfSensors = 30;
-            int delayOnX = 5;
-            int delayOnY =  4;
-            int delayOnZ =  5;
+            int delayOnX = 2;
+            int delayOnY =  3;
+            int delayOnZ =  2;
             int delayOnA = 3;
             int numberOfRepetitions = -1;
             Random random = new Random();
@@ -97,11 +97,7 @@ namespace Generator
 
         public static async Task postSensorDataAsync(int sensorId,int sensorType)
         {
-            /*
-            var httpWebRequest = (HttpWebRequest)WebRequest.Create("http://api/api/sensor");
-            httpWebRequest.ContentType = "application/json";
-            httpWebRequest.Method = "POST";
-            */
+     
             Random random = new Random();
             //int value = random.Next(0, 1000);
             int value;
@@ -145,23 +141,6 @@ namespace Generator
             var _mqttClient = await handler.CreateConnection();
             await _mqttClient.PublishAsync(message, CancellationToken.None);
 
-            /*
-            using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
-            {
-                string json = "{\"sensorId\":\"" + sensorId + "\"," +
-                              "\"sensorType\":\"" + sensorType + "\"," +
-                              "\"value\":\"" + value + "\"}";
-                mqttClient.PublishAsync(json);
-                //streamWriter.Write(json);
-            }*/
-
-            /*
-            var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-            using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
-            {
-                var result = streamReader.ReadToEnd();
-            }
-            */
         }
 
         private async Task<IMqttClient> CreateConnection()
