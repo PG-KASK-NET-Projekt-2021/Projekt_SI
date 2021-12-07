@@ -42,38 +42,19 @@ namespace Generator
 
     class Program
     {
-        private const string ServerName = "queue";
-        private const int ServerPort = 1883;
-
-        public static readonly IMqttClient mqttClient;
         static void Main(string[] args)
         {
     
             int numberOfSensors = 30;
-            int delayOnX =50;
-            int delayOnY =  55;
-            int delayOnZ =  60;
-            int delayOnA = 45;
+            int delayOnX = 5;
+            int delayOnY =  4;
+            int delayOnZ =  5;
+            int delayOnA = 3;
             int numberOfRepetitions = -1;
             Random random = new Random();
             Sensor sensor;
             Thread[] threads = new Thread[numberOfSensors];
 
-            /*
-            MqttClientOptionsBuilder builder = new MqttClientOptionsBuilder()
-                                        .WithClientId("Dev.To")
-                                        .WithTcpServer("queue", 1883);
-            MqttFactory mqttFactory = new MqttFactory();
-            IManagedMqttClient mqttClient = mqttFactory.CreateManagedMqttClient();
-            ManagedMqttClientOptions options = new ManagedMqttClientOptionsBuilder()
-                        .WithAutoReconnectDelay(TimeSpan.FromSeconds(60))
-                        .WithClientOptions(builder.Build())
-                        .Build();
-            mqttClient.ConnectedHandler = new MqttClientConnectedHandlerDelegate(OnConnected);
-            mqttClient.DisconnectedHandler = new MqttClientDisconnectedHandlerDelegate(OnDisconnected);
-            mqttClient.ConnectingFailedHandler = new ConnectingFailedHandlerDelegate(OnConnectingFailed);
-            mqttClient.StartAsync(options).GetAwaiter().GetResult();
-            */
 
             for (int i = 0; i < numberOfSensors; i++)
             {
@@ -104,21 +85,6 @@ namespace Generator
             return sensor;
         }
 
-        public static void OnConnected(MqttClientConnectedEventArgs obj)
-        {
-            Log.Logger.Information("Successfully connected.");
-        }
-
-        public static void OnConnectingFailed(ManagedProcessFailedEventArgs obj)
-        {
-            Log.Logger.Warning("Couldn't connect to broker.");
-        }
-
-        public static void OnDisconnected(MqttClientDisconnectedEventArgs obj)
-        {
-            Log.Logger.Information("Successfully disconnected.");
-        }
-
     }
 
 
@@ -131,9 +97,11 @@ namespace Generator
 
         public static async Task postSensorDataAsync(int sensorId,int sensorType)
         {
+            /*
             var httpWebRequest = (HttpWebRequest)WebRequest.Create("http://api/api/sensor");
             httpWebRequest.ContentType = "application/json";
             httpWebRequest.Method = "POST";
+            */
             Random random = new Random();
             //int value = random.Next(0, 1000);
             int value;
