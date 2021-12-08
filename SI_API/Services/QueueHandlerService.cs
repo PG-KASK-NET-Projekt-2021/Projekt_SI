@@ -9,12 +9,14 @@ using MQTTnet.Client;
 using MQTTnet.Client.Options;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using MongoDB.Bson;
 using MQTTnet.Client.Subscribing;
 
 namespace SI_API.Services
 {
     public class QueueHandlerService : BackgroundService
     {
+        private readonly SensorDataService _sensorDataService;
         private readonly MqttFactory mqttFactory;
         private readonly IMqttClient mqttClient;
         private const string topic = "SENSOR_TOPIC";
@@ -22,13 +24,12 @@ namespace SI_API.Services
         private int waitTime = 2000;
         private const string ServerName = "queue";
         private const int ServerPort = 1883;
-        private readonly Memory _mem;
 
-        public QueueHandlerService(ILogger<QueueHandlerService> logger, Memory mem)
+        public QueueHandlerService(ILogger<QueueHandlerService> logger, SensorDataService sensorDataService)
         {
             _logger = logger;
-            _mem = mem;
-            
+            _sensorDataService = sensorDataService;
+
             mqttFactory = new MqttFactory();
             mqttClient = mqttFactory.CreateMqttClient();
             
@@ -43,12 +44,10 @@ namespace SI_API.Services
             {
                 SensorData data =
                     JsonSerializer.Deserialize<SensorData>($"{Encoding.UTF8.GetString(e.ApplicationMessage.Payload)}");
-                _mem.Add(data);
-                Console.WriteLine("### RECEIVED APPLICATION MESSAGE ###");
-                Console.WriteLine($"+ Topic = {e.ApplicationMessage.Topic}");
+                data._id = ObjectId.Empty;
+                sensorDataService.Create(data);
+                Console.WriteLine("### RECEIVED DATA ###");
                 Console.WriteLine($"+ Payload = {Encoding.UTF8.GetString(e.ApplicationMessage.Payload)}");
-                Console.WriteLine($"+ QoS = {e.ApplicationMessage.QualityOfServiceLevel}");
-                Console.WriteLine($"+ Retain = {e.ApplicationMessage.Retain}");
                 Console.WriteLine();
             });
         }

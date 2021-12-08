@@ -5,12 +5,20 @@ services:
     image: mongo
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: pG956trBF4a5
+      MONGO_INITDB_ROOT_PASSWORD: pwd
+      
+    ports:
+      - "27017:27017"
   queue:
     image: eclipse-mosquitto
     volumes:
       - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
   back:
+    environment:
+      MONGO_USERNAME: user
+      MONGO_PASSWORD: pwd
+      MONGO_DB_NAME: 175573
+      MONGO_COLLECTION: SensorData
     build: SI_API
     ports:
       - "81:80"

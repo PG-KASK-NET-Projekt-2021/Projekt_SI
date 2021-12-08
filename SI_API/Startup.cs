@@ -27,7 +27,7 @@ namespace SI_API
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddHostedService<Services.QueueHandlerService>();
-            services.AddSingleton<Memory>();
+            services.AddSingleton<Services.SensorDataService>();
             services.AddControllers();
             services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo {Title = "SI_API", Version = "v1"}); });
         }
