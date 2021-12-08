@@ -108,6 +108,7 @@ namespace Generator
 
             for (int i = 0; i < numberOfSensors; i++)
             {
+                /*
                 sensor = getRandomSensor(random);
                 switch (sensor)
                 {
@@ -123,6 +124,23 @@ namespace Generator
                     case Sensor.Fotometr:
                         threads[i] = new Thread(new Fotometr(i, 3, numberOfRepetitions, delayOnA).sendData);
                         break;
+                }
+                */
+                if(i < numberOfSensors / 4)
+                {
+                    threads[i] = new Thread(new Termometr(i, 0, numberOfRepetitions, delayOnX).sendData);
+                }
+                else if(i< numberOfSensors / 2)
+                {
+                    threads[i] = new Thread(new Barometr(i, 1, numberOfRepetitions, delayOnY).sendData);
+                }
+                else if (i < 3* numberOfSensors / 4)
+                {
+                    threads[i] = new Thread(new Higrometr(i, 2, numberOfRepetitions, delayOnZ).sendData);
+                }
+                else
+                {
+                    threads[i] = new Thread(new Fotometr(i, 3, numberOfRepetitions, delayOnA).sendData);
                 }
                 threads[i].Start();
             }
@@ -151,7 +169,7 @@ namespace Generator
 
         public static async Task postSensorDataAsync(int sensorId,int sensorType)
         {
-     
+            //Console.WriteLine(sensorId);
             Random random = new Random();
             //int value = random.Next(0, 1000);
             int value;
@@ -183,6 +201,8 @@ namespace Generator
             };
 
             var jsonData = JsonConvert.SerializeObject(data);
+
+            //Console.WriteLine(jsonData);
 
             var message = new MqttApplicationMessageBuilder()
                      .WithTopic(Topic)
