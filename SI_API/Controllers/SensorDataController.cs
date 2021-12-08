@@ -25,9 +25,32 @@ namespace SI_API.Controllers
         
         [Route("/api/[controller]/pages")]
         [HttpGet]
-        public int GetPages()
+        public int GetPages(
+            [FromQuery] DateTime from,
+            [FromQuery] DateTime to,
+            [FromQuery] String type,
+            [FromQuery] String sensor)
         {
-            return _sensorDataService.GetPagesNumber();
+            List<int> typesInt = new List<int>(), sensorsInt  = new List<int>();
+            
+            if(to.Equals(DateTime.MinValue))
+                to = DateTime.MaxValue;
+            
+            if (type != null)
+            {
+                String[] types;
+                types = type.Split(',');
+                typesInt = types.Select(x => Int32.Parse(x)).ToList();
+            }
+            
+            if (sensor != null)
+            {
+                String[] sensors;
+                sensors = sensor.Split(',');
+                sensorsInt = sensors.Select(x => Int32.Parse(x)).ToList();
+            }
+            
+            return _sensorDataService.GetPagesNumber(from, to, typesInt, sensorsInt);
         }
         
         [Route("/api/[controller]/sensorIdList")]

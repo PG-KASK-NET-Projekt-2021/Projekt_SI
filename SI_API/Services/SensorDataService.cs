@@ -31,9 +31,8 @@ namespace SI_API.Services
         {
             return _sensorDataModel.Find(sensorDataModel => true).ToList();
         }
-        
-        
-        public List<SensorDataModel> Get(DateTime from, DateTime to, List<int> type, List<int> sensor, String sortBy, String order, int page)
+
+        private Tuple<FilterDefinition<SensorDataModel>, SortDefinition<SensorDataModel>> buildFilter(DateTime from, DateTime to, List<int> type, List<int> sensor, String sortBy, String order)
         {
             var builder = Builders<SensorDataModel>.Filter;
             var filter = builder.Lte("Date", to) &
@@ -62,6 +61,15 @@ namespace SI_API.Services
                         sort = Builders<SensorDataModel>.Sort.Descending("Date");
                 }
             }
+
+            return new Tuple<FilterDefinition<SensorDataModel>, SortDefinition<SensorDataModel>>(filter, sort);
+        }
+        public List<SensorDataModel> Get(DateTime from, DateTime to, List<int> type, List<int> sensor, String sortBy, String order, int page)
+        {
+            var filterTuple = buildFilter(from, to, type, sensor, sortBy, order);
+            var filter = filterTuple.Item1;
+            var sort = filterTuple.Item2;
+            
             if (sort is null)
                 return _sensorDataModel.Find(filter).Skip((page-1) * PageSize).Limit(PageSize).ToList();
             
@@ -78,9 +86,12 @@ namespace SI_API.Services
 
 
 
-        public int GetPagesNumber()
+        public int GetPagesNumber(DateTime from, DateTime to, List<int> type, List<int> sensor)
         {
-            long n = _sensorDataModel.CountDocuments(sensorDataModel => true);
+            var filterTuple = buildFilter(from, to, type, sensor, null, null);
+            var filter = filterTuple.Item1;
+
+            long n = _sensorDataModel.CountDocuments(filter);
             if (n % PageSize == 0)
                 return (int)(n / PageSize);
             else
