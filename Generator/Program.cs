@@ -45,12 +45,62 @@ namespace Generator
         static void Main(string[] args)
         {
     
-            int numberOfSensors = 30;
-            int delayOnX = 2;
-            int delayOnY =  3;
-            int delayOnZ =  2;
-            int delayOnA = 3;
-            int numberOfRepetitions = -1;
+            int numberOfSensors;
+            int delayOnX;
+            int delayOnY;
+            int delayOnZ;
+            int delayOnA;
+            int numberOfRepetitions;
+
+            if (Environment.GetEnvironmentVariable("SI_NUMBER_OF_SENSORS") != null)
+            {
+                numberOfSensors = int.Parse(Environment.GetEnvironmentVariable("SI_NUMBER_OF_SENSORS"));
+            }
+            else
+            {
+                numberOfSensors = 30;
+            }
+            if (Environment.GetEnvironmentVariable("SI_DELAY_ON_X") != null)
+            {
+                delayOnX = int.Parse(Environment.GetEnvironmentVariable("SI_DELAY_ON_X"));
+            }
+            else
+            {
+                delayOnX = 2;
+            }
+            if (Environment.GetEnvironmentVariable("SI_DELAY_ON_Y") != null)
+            {
+                delayOnY = int.Parse(Environment.GetEnvironmentVariable("SI_DELAY_ON_Y"));
+            }
+            else
+            {
+                delayOnY = 3;
+            }
+            if (Environment.GetEnvironmentVariable("SI_DELAY_ON_Z") != null)
+            {
+                delayOnZ = int.Parse(Environment.GetEnvironmentVariable("SI_DELAY_ON_Z"));
+            }
+            else
+            {
+                delayOnZ = 2;
+            }
+            if (Environment.GetEnvironmentVariable("SI_DELAY_ON_A") != null)
+            {
+                delayOnA = int.Parse(Environment.GetEnvironmentVariable("SI_DELAY_ON_A"));
+            }
+            else
+            {
+                delayOnA = 2;
+            }
+            if (Environment.GetEnvironmentVariable("SI_NUMBER_OF_REPETITIONS") != null)
+            {
+                numberOfRepetitions = int.Parse(Environment.GetEnvironmentVariable("SI_NUMBER_OF_REPETITIONS"));
+            }
+            else
+            {
+                numberOfRepetitions = -1;
+            }
+
             Random random = new Random();
             Sensor sensor;
             Thread[] threads = new Thread[numberOfSensors];
@@ -94,6 +144,10 @@ namespace Generator
         private const string ServerName = "queue";
         private const int ServerPort = 1883;
         private readonly MqttFactory _mqttFactory = new MqttFactory();
+        private readonly MqttFactory _mqttClient;
+
+        public HttpHandler() { 
+        }
 
         public static async Task postSensorDataAsync(int sensorId,int sensorType)
         {
