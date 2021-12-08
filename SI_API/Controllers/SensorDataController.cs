@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
@@ -22,7 +23,18 @@ namespace SI_API.Controllers
             _logger = logger;
             _sensorDataService = sensorDataService;
         }
-        
+
+        private List<int> parseInts(String type)
+        {
+            if (type != null)
+            {
+                String[] types;
+                types = type.Split(',');
+                return types.Select(x => Int32.Parse(x)).ToList();
+            }
+            return new List<int>();
+        }
+
         [Route("/api/[controller]/pages")]
         [HttpGet]
         public int GetPages(
@@ -31,24 +43,10 @@ namespace SI_API.Controllers
             [FromQuery] String type,
             [FromQuery] String sensor)
         {
-            List<int> typesInt = new List<int>(), sensorsInt  = new List<int>();
+            List<int> typesInt = parseInts(type), sensorsInt  = parseInts(sensor);
             
             if(to.Equals(DateTime.MinValue))
                 to = DateTime.MaxValue;
-            
-            if (type != null)
-            {
-                String[] types;
-                types = type.Split(',');
-                typesInt = types.Select(x => Int32.Parse(x)).ToList();
-            }
-            
-            if (sensor != null)
-            {
-                String[] sensors;
-                sensors = sensor.Split(',');
-                sensorsInt = sensors.Select(x => Int32.Parse(x)).ToList();
-            }
             
             return _sensorDataService.GetPagesNumber(from, to, typesInt, sensorsInt);
         }
@@ -71,24 +69,10 @@ namespace SI_API.Controllers
             [FromQuery] int page
         )
         {
-            List<int> typesInt = new List<int>(), sensorsInt  = new List<int>();
+            List<int> typesInt = parseInts(type), sensorsInt  = parseInts(sensor);
             
             if(to.Equals(DateTime.MinValue))
                 to = DateTime.MaxValue;
-            
-            if (type != null)
-            {
-                String[] types;
-                types = type.Split(',');
-                typesInt = types.Select(x => Int32.Parse(x)).ToList();
-            }
-            
-            if (sensor != null)
-            {
-                String[] sensors;
-                sensors = sensor.Split(',');
-                sensorsInt = sensors.Select(x => Int32.Parse(x)).ToList();
-            }
 
             if (page == 0)
                 page = 1;
@@ -107,25 +91,11 @@ namespace SI_API.Controllers
             [FromQuery] String order,
             [FromQuery] int page)
         {
-            List<int> typesInt = new List<int>(), sensorsInt  = new List<int>();
+            List<int> typesInt = parseInts(type), sensorsInt  = parseInts(sensor);
             
             if(to.Equals(DateTime.MinValue))
                 to = DateTime.MaxValue;
             
-            if (type != null)
-            {
-                String[] types;
-                types = type.Split(',');
-                typesInt = types.Select(x => Int32.Parse(x)).ToList();
-            }
-            
-            if (sensor != null)
-            {
-                String[] sensors;
-                sensors = sensor.Split(',');
-                sensorsInt = sensors.Select(x => Int32.Parse(x)).ToList();
-            }
-
             if (page == 0)
                 page = 1;
             
