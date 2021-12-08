@@ -80,8 +80,25 @@ namespace SI_API.Controllers
             return _sensorDataService.GetPage(from, to, typesInt, sensorsInt, sortBy, order, page);
         }
         
+        [Route("/api/[controller]/json")]
+        [HttpGet]
+        public List<SensorDataModel> GetJson(
+            [FromQuery] DateTime from,
+            [FromQuery] DateTime to,
+            [FromQuery] String type,
+            [FromQuery] String sensor,
+            [FromQuery] String sortBy,
+            [FromQuery] String order)
+        {
+            List<int> typesInt = parseInts(type), sensorsInt  = parseInts(sensor);
+            
+            if(to.Equals(DateTime.MinValue))
+                to = DateTime.MaxValue;
+
+            return _sensorDataService.Get(from, to, typesInt, sensorsInt, sortBy, order);
+        }
+        
         [Route("/api/[controller]/csv")]
-        [Produces("text/csv")]
         [HttpGet]
         public string GetCsv(
             [FromQuery] DateTime from,
