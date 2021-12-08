@@ -158,16 +158,16 @@ namespace Generator
             switch (sensorType)
             {
                 case 0:
-                    value = random.Next(-40, 50);
+                    value = random.Next(-4000, 5000);
                     break;
                 case 1:
-                    value = random.Next(960, 1060);
+                    value = random.Next(96000, 106000);
                     break;
                 case 2:
-                    value = random.Next(0, 100);
+                    value = random.Next(0, 10000);
                     break;
                 case 3:
-                    value = random.Next(20, 110000);
+                    value = random.Next(2000, 11000000);
                     break;
                 default:
                     value = -100;
