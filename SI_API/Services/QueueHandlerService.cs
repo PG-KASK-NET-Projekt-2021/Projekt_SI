@@ -44,8 +44,9 @@ namespace SI_API.Services
             {
                 SensorData data =
                     JsonSerializer.Deserialize<SensorData>($"{Encoding.UTF8.GetString(e.ApplicationMessage.Payload)}");
-                data._id = ObjectId.Empty;
-                sensorDataService.Create(data);
+                
+                sensorDataService.Create(DataConverter.Convert(data));
+                
                 Console.WriteLine("### RECEIVED DATA ###");
                 Console.WriteLine($"+ Payload = {Encoding.UTF8.GetString(e.ApplicationMessage.Payload)}");
                 Console.WriteLine();

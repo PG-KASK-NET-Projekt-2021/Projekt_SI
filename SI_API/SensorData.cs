@@ -6,15 +6,13 @@ namespace SI_API
 {
     public class SensorData
     {
-        [BsonId]
-        public ObjectId _id { get; set; }
-        
-        [BsonElement("Date")] public DateTime Date { get; set; }
 
-        [BsonElement("SensorId")] public int SensorId { get; set; }
+        public DateTime Date { get; set; }
 
-        [BsonElement("SensorType")] public int SensorType { get; set; }
+        public int SensorId { get; set; }
 
-        [BsonElement("Value")] public int Value { get; set; }
+        public int SensorType { get; set; }
+
+        public float Value { get; set; }
     }
 }

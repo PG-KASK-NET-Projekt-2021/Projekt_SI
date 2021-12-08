@@ -8,7 +8,7 @@ namespace SI_API.Services
 {
     public class SensorDataService
     {
-        private readonly IMongoCollection<SensorData> _sensorData;
+        private readonly IMongoCollection<SensorDataModel> _sensorDataModel;
 
         public SensorDataService()
         {
@@ -22,18 +22,18 @@ namespace SI_API.Services
             
             var client = new MongoClient(mongoClientSettings);
             var database = client.GetDatabase(Environment.GetEnvironmentVariable("MONGO_DB_NAME"));
-            _sensorData = database.GetCollection<SensorData>(Environment.GetEnvironmentVariable("MONGO_COLLECTION"));
+            _sensorDataModel = database.GetCollection<SensorDataModel>(Environment.GetEnvironmentVariable("MONGO_COLLECTION"));
         }
 
-        public List<SensorData> Get()
+        public List<SensorDataModel> Get()
         {
-            return _sensorData.Find(sensorData => true).ToList();
+            return _sensorDataModel.Find(sensorDataModel => true).ToList();
         }
         
-        public List<SensorData> Get(DateTime from, DateTime to, List<int> type, List<int> sensor, String sortBy, String order)
+        public List<SensorDataModel> Get(DateTime from, DateTime to, List<int> type, List<int> sensor, String sortBy, String order)
         {
             
-            var builder = Builders<SensorData>.Filter;
+            var builder = Builders<SensorDataModel>.Filter;
             var filter = builder.Lte("Date", to) &
                          builder.Gte("Date", from);
             if (type.Count > 0)
@@ -41,54 +41,58 @@ namespace SI_API.Services
             if(sensor.Count > 0)
                 filter &= builder.In("SensorId", sensor);
 
-            SortDefinition<SensorData> sort = null;
-            
-            if (sortBy.Equals("Value"))
+            SortDefinition<SensorDataModel> sort = null;
+
+            if (sortBy is not null)
             {
-                if (order.Equals("asc"))
-                    sort = Builders<SensorData>.Sort.Ascending("Value");
+                if (sortBy.Equals("Value"))
+                {
+                    if (order.Equals("asc"))
+                        sort = Builders<SensorDataModel>.Sort.Ascending("Value");
+                    else
+                        sort = Builders<SensorDataModel>.Sort.Descending("Value");
+                }
                 else
-                    sort = Builders<SensorData>.Sort.Descending("Value");
-            }
-            else
-            {
-                if (order.Equals("asc"))
-                    sort = Builders<SensorData>.Sort.Ascending("Date");
-                else
-                    sort = Builders<SensorData>.Sort.Descending("Date");
+                {
+                    if (order.Equals("asc"))
+                        sort = Builders<SensorDataModel>.Sort.Ascending("Date");
+                    else
+                        sort = Builders<SensorDataModel>.Sort.Descending("Date");
+                }
             }
 
+
             if (sort is null)
-                return _sensorData.Find(filter).ToList();
+                return _sensorDataModel.Find(filter).ToList();
             
-            return _sensorData.Find(filter).Sort(sort).ToList();
+            return _sensorDataModel.Find(filter).Sort(sort).ToList();
         }
         
 
-        public SensorData Get(int sensorId)
+        public SensorDataModel Get(int sensorId)
         {
-            return _sensorData.Find(sensorData => sensorData.SensorId == sensorId).FirstOrDefault();
+            return _sensorDataModel.Find(sensorDataModel => sensorDataModel.SensorId == sensorId).FirstOrDefault();
         }
 
-        public SensorData Create(SensorData sensorData)
+        public SensorDataModel Create(SensorDataModel sensorDataModel)
         {
-            _sensorData.InsertOne(sensorData);
-            return sensorData;
+            _sensorDataModel.InsertOne(sensorDataModel);
+            return sensorDataModel;
         }
 
-        public void Remove(SensorData sensorDataIn)
+        public void Remove(SensorDataModel sensorDataModelIn)
         {
-            _sensorData.DeleteOne(sensorData => sensorData.SensorId == sensorDataIn.SensorId);
+            _sensorDataModel.DeleteOne(sensorDataModel => sensorDataModel.SensorId == sensorDataModelIn.SensorId);
         }
 
         public void Remove(int id)
         {
-            _sensorData.DeleteOne(sensorData => sensorData.SensorId == id);
+            _sensorDataModel.DeleteOne(sensorDataModel => sensorDataModel.SensorId == id);
         }
 
         public IEnumerable<int> GetListOfIds()
         {
-            IEnumerable<int> ids = _sensorData.Find(sensorData => true).ToList().Select(o => o.SensorId).ToList().Distinct();
+            IEnumerable<int> ids = _sensorDataModel.Find(sensorDataModel => true).ToList().Select(o => o.SensorId).ToList().Distinct();
             return ids;
         }
     }

@@ -31,7 +31,7 @@ namespace SI_API.Controllers
         }
         
         [HttpGet]
-        public ActionResult<List<SensorData>> Get(
+        public ActionResult<List<SensorDataModel>> Get(
             [FromQuery] DateTime from,
             [FromQuery] DateTime to,
             [FromQuery] String type,
