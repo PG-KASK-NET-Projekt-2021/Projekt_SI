@@ -16,5 +16,10 @@ namespace SI_API
             [BsonElement("SensorType")] public int SensorType { get; set; }
 
             [BsonElement("Value")] public float Value { get; set; }
+            
+            public override string ToString()
+            {
+                return $"{Date}, {SensorId}, {SensorType}, {Value}";
+            }
     }
 }

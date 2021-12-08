@@ -72,5 +72,43 @@ namespace SI_API.Controllers
 
             return _sensorDataService.Get(from, to, typesInt, sensorsInt, sortBy, order, page);
         }
+        
+        [Route("/api/[controller]/csv")]
+        [HttpGet]
+        public string GetCsv(
+            [FromQuery] DateTime from,
+            [FromQuery] DateTime to,
+            [FromQuery] String type,
+            [FromQuery] String sensor,
+            [FromQuery] String sortBy,
+            [FromQuery] String order,
+            [FromQuery] int page)
+        {
+            List<int> typesInt = new List<int>(), sensorsInt  = new List<int>();
+            
+            if(to.Equals(DateTime.MinValue))
+                to = DateTime.MaxValue;
+            
+            if (type != null)
+            {
+                String[] types;
+                types = type.Split(',');
+                typesInt = types.Select(x => Int32.Parse(x)).ToList();
+            }
+            
+            if (sensor != null)
+            {
+                String[] sensors;
+                sensors = sensor.Split(',');
+                sensorsInt = sensors.Select(x => Int32.Parse(x)).ToList();
+            }
+
+            if (page == 0)
+                page = 1;
+            
+            return _sensorDataService.GetCsv(from, to, typesInt, sensorsInt, sortBy, order, page);
+        }
+
+        
     }
 }

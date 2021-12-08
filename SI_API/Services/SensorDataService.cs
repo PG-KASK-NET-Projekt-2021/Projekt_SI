@@ -14,7 +14,8 @@ namespace SI_API.Services
         public SensorDataService()
         {
             var mongoClientSettings = new MongoClientSettings();
-            mongoClientSettings.Server = new MongoServerAddress("mongo", 27017);
+            mongoClientSettings.Server = new MongoServerAddress(Environment.GetEnvironmentVariable("MONGO_IP"),
+                Int32.Parse(Environment.GetEnvironmentVariable("MONGO_PORT") ?? "27017"));
             mongoClientSettings.Credential = MongoCredential.CreateCredential(
                 Environment.GetEnvironmentVariable("MONGO_DB_NAME"),
                 Environment.GetEnvironmentVariable("MONGO_USERNAME"),
@@ -34,8 +35,6 @@ namespace SI_API.Services
         
         public List<SensorDataModel> Get(DateTime from, DateTime to, List<int> type, List<int> sensor, String sortBy, String order, int page)
         {
-
-            
             var builder = Builders<SensorDataModel>.Filter;
             var filter = builder.Lte("Date", to) &
                          builder.Gte("Date", from);
@@ -63,14 +62,20 @@ namespace SI_API.Services
                         sort = Builders<SensorDataModel>.Sort.Descending("Date");
                 }
             }
-            
-            
-            
             if (sort is null)
                 return _sensorDataModel.Find(filter).Skip((page-1) * PageSize).Limit(PageSize).ToList();
             
             return _sensorDataModel.Find(filter).Sort(sort).Skip((page-1) * PageSize).Limit(PageSize).ToList();
         }
+        
+        
+        public string GetCsv(DateTime from, DateTime to, List<int> type, List<int> sensor, String sortBy, String order, int page)
+        {
+            List<SensorDataModel> list = Get(from, to, type, sensor, sortBy, order, page);
+            string csv = "Date, SensorType, SensorId, Value\n";
+            return csv + String.Join("\n", list.Select(x => x.ToString()).ToArray());
+        }
+
 
 
         public int GetPagesNumber()
