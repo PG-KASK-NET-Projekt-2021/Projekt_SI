@@ -4,6 +4,6 @@ namespace gui
 {
     public class SensorQueueData : SensorData
     {
-        public DateTime Date { get; set; }
+        public DateTime date { get; set; }
     }
 }

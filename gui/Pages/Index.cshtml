@@ -1,29 +1,97 @@
 ﻿@page
+@using System.Web
 @model IndexModel
 @{
     ViewData["Title"] = "Sensors";
 
     var client = new HttpClient();
-    var streamTask = client.GetStreamAsync("http://back/api/SensorData");
+
+    const string urlPrefix = "http://127.0.0.1:81/api/";
+    const string sensorData = "SensorData?";
+    const string sensorDataCount = "SensorData/pages?";
+
+    string[] sensorTypes = {"Termometr", "Barometr", "Higrometr", "Fotometr"};
+
+    string[] parameters = {"from", "to", "type", "sensor", "orderBy", "order", "page"};
+    var url = parameters.Where(parameter => HttpContext.Request.Query[parameter].ToString().Length > 0).Aggregate(urlPrefix + sensorData, (current, parameter) => current + "&" + parameter + "=" + HttpUtility.UrlEncode(HttpContext.Request.Query[parameter].ToString()));
+
+    var streamTask = client.GetStreamAsync(url);
     var sensors = await JsonSerializer.DeserializeAsync<List<SensorQueueData>>(await streamTask);
+
+    //var pages = await client.GetStreamAsync(url.Replace(sensorData, sensorDataCount));
+    
+    var sensorIds = await JsonSerializer.DeserializeAsync<List<int>>(
+        await client.GetStreamAsync(urlPrefix+"SensorData/sensorIdList")
+        );
+    sensorIds.Sort();
 }
 
 <div class="text-center">
+    <form>
+        <label>
+            Typ czujnika:
+            <select name="type" multiple>
+                <option value="">Wybierz</option>
+                @for (var i = 0; i < sensorTypes.Length; i++)
+                {
+                    <option value="@i">@sensorTypes[i]</option>
+                }
+            </select>
+        </label>
+        <label>
+            Instancja czujnika:
+            <select name="sensor" multiple>
+                <option value="">Wybierz</option>
+                @foreach (var id in sensorIds)
+                {
+                    <option value="@id">Sensor @id</option>
+                }
+            </select>
+        </label>
+        <label>
+            Data od:
+            <input name="from" type="datetime-local"/>
+        </label>
+        <label>
+            Data do:
+            <input name="to" type="datetime-local"/>
+        </label>
+        <label>
+            Sortuj po:
+            <select name="sortBy">
+                <option value="Value">Wartość</option>
+                <option value="Date">Data</option>
+            </select>
+        </label>
+        <label>
+            Porządek:
+            <select name="order">
+                <option value="asc">Rosnący</option>
+                <option value="desc">Malejący</option>
+            </select>
+        </label>
+        <input type="submit" value="Szukaj"/>
+        <input type="reset" value="Wyczyść"/>
+    </form>
     <table style="margin: auto">
         <tr>
-            <th>Sensor Type</th>
-            <th>Sensor ID</th>
-            <th>Date</th>
-            <th>Value</th>
+            <th>Typ</th>
+            <th>ID</th>
+            <th>Data</th>
+            <th>Wartość</th>
         </tr>
         @foreach (var sensor in sensors)
         {
             <tr>
-                <td>@sensor.SensorType</td>
-                <td>@sensor.SensorId</td>
-                <td>@sensor.Date.Hour:@sensor.Date.Minute:@sensor.Date.Second</td>
-                <td>@sensor.Value</td>
+                <td>@sensorTypes[sensor.sensorType]</td>
+                <td>@sensor.sensorId</td>
+                <td>@sensor.date.Hour:@sensor.date.Minute:@sensor.date.Second</td>
+                <td>@sensor.value</td>
             </tr>
+        }
+        @foreach (var key in HttpContext.Request.Query.Keys)
+        {
+            @HttpContext.Request.Query[key].ToString()
         }
     </table>
 </div>

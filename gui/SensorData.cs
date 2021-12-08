@@ -2,10 +2,10 @@ namespace gui
 {
     public class SensorData
     {
-        public int SensorId { get; set; }
+        public int sensorId { get; set; }
 
-        public int SensorType { get; set; }
+        public int sensorType { get; set; }
 
-        public int Value { get; set; }
+        public int value { get; set; }
     }
 }
