@@ -6,6 +6,6 @@ namespace gui
 
         public int sensorType { get; set; }
 
-        public int value { get; set; }
+        public float value { get; set; }
     }
 }

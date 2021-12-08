@@ -9,8 +9,10 @@
     const string urlPrefix = "http://127.0.0.1:81/api/";
     const string sensorData = "SensorData?";
     const string sensorDataCount = "SensorData/pages?";
+    const string sensorDataCsv = "SensorData/csv?";
 
     string[] sensorTypes = {"Termometr", "Barometr", "Higrometr", "Fotometr"};
+    string[] sensorUnit = {"°C", "hPa", "%", "lm"};
 
     string[] parameters = {"from", "to", "type", "sensor", "sortBy", "order", "page"};
     var url = parameters.Where(parameter => HttpContext.Request.Query[parameter].ToString().Length > 0).Aggregate(urlPrefix + sensorData, (current, parameter) => current + "&" + parameter + "=" + HttpUtility.UrlEncode(HttpContext.Request.Query[parameter].ToString()));
@@ -74,15 +76,15 @@
         <label>
             Sortuj po:
             <select name="sortBy">
-                @if (HttpContext.Request.Query["sortBy"].Contains("Date"))
+                @if (HttpContext.Request.Query["sortBy"].Contains("Value"))
                 {
-                    <option value="Value">Wartość</option>
-                    <option value="Date" selected>Data</option>
+                    <option value="Value" selected>Wartość</option>
+                    <option value="Date">Data</option>
                 }
                 else
                 {
                     <option value="Value">Wartość</option>
-                    <option value="Date">Data</option>
+                    <option value="Date" selected>Data</option>
                 }
             </select>
         </label>
@@ -116,8 +118,8 @@
             <tr>
                 <td>@sensorTypes[sensor.sensorType]</td>
                 <td>@sensor.sensorId</td>
-                <td>@sensor.date.Hour:@sensor.date.Minute:@sensor.date.Second</td>
-                <td>@sensor.value</td>
+                <td>@String.Format("{0:HH:mm:ss}",sensor.date)</td>
+                <td>@sensor.value @sensorUnit[sensor.sensorType]</td>
             </tr>
         }
         @foreach (var key in HttpContext.Request.Query.Keys)
@@ -125,9 +127,18 @@
             @HttpContext.Request.Query[key].ToString()
         }
     </table>
+    <br/>
+    <p>Pobieranie</p>
+    <a href="@url.Replace(sensorData, sensorDataCsv)">CSV</a>
     <p>Przejdź do strony:</p>
-    @for (var i = 0; i < pages; i++)
+    @for (var i = 1; i <= pages; i++)
     {
-        <a href="#" onclick="var queryParams = new URLSearchParams(window.location.search);queryParams.set('page', @i);window.location.href='?'+queryParams.toString();">@(i + 1)</a>
+        <a onclick="var queryParams = new URLSearchParams(window.location.search);queryParams.set('page', @i);window.location.href='?'+queryParams.toString();">@i</a>
     }
 </div>
+
+<style>
+    td {
+        padding: 5px;
+    }
+</style>
