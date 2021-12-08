@@ -12,66 +12,97 @@
 
     string[] sensorTypes = {"Termometr", "Barometr", "Higrometr", "Fotometr"};
 
-    string[] parameters = {"from", "to", "type", "sensor", "orderBy", "order", "page"};
+    string[] parameters = {"from", "to", "type", "sensor", "sortBy", "order", "page"};
     var url = parameters.Where(parameter => HttpContext.Request.Query[parameter].ToString().Length > 0).Aggregate(urlPrefix + sensorData, (current, parameter) => current + "&" + parameter + "=" + HttpUtility.UrlEncode(HttpContext.Request.Query[parameter].ToString()));
 
     var streamTask = client.GetStreamAsync(url);
     var sensors = await JsonSerializer.DeserializeAsync<List<SensorQueueData>>(await streamTask);
 
-    //var pages = await client.GetStreamAsync(url.Replace(sensorData, sensorDataCount));
-    
+    var pages = await JsonSerializer.DeserializeAsync<int>(
+        await client.GetStreamAsync(url.Replace(sensorData, sensorDataCount))
+        );
+
     var sensorIds = await JsonSerializer.DeserializeAsync<List<int>>(
-        await client.GetStreamAsync(urlPrefix+"SensorData/sensorIdList")
+        await client.GetStreamAsync(urlPrefix + "SensorData/sensorIdList")
         );
     sensorIds.Sort();
 }
 
 <div class="text-center">
+    @url
     <form>
         <label>
             Typ czujnika:
             <select name="type" multiple>
-                <option value="">Wybierz</option>
                 @for (var i = 0; i < sensorTypes.Length; i++)
                 {
-                    <option value="@i">@sensorTypes[i]</option>
+                    if (HttpContext.Request.Query["type"].Contains(i.ToString()))
+                    {
+                        <option value="@i" selected>@sensorTypes[i]</option>
+                    }
+                    else
+                    {
+                        <option value="@i">@sensorTypes[i]</option>
+                    }
                 }
             </select>
         </label>
         <label>
             Instancja czujnika:
             <select name="sensor" multiple>
-                <option value="">Wybierz</option>
                 @foreach (var id in sensorIds)
                 {
-                    <option value="@id">Sensor @id</option>
+                    if (HttpContext.Request.Query["sensor"].Contains(id.ToString()))
+                    {
+                        <option value="@id" selected>Sensor @id</option>
+                    }
+                    else
+                    {
+                        <option value="@id">Sensor @id</option>
+                    }
                 }
             </select>
         </label>
         <label>
             Data od:
-            <input name="from" type="datetime-local"/>
+            <input name="from" type="datetime-local" value="@HttpContext.Request.Query["from"]"/>
         </label>
         <label>
             Data do:
-            <input name="to" type="datetime-local"/>
+            <input name="to" type="datetime-local" value="@HttpContext.Request.Query["to"]"/>
         </label>
         <label>
             Sortuj po:
             <select name="sortBy">
-                <option value="Value">Wartość</option>
-                <option value="Date">Data</option>
+                @if (HttpContext.Request.Query["sortBy"].Contains("Date"))
+                {
+                    <option value="Value">Wartość</option>
+                    <option value="Date" selected>Data</option>
+                }
+                else
+                {
+                    <option value="Value">Wartość</option>
+                    <option value="Date">Data</option>
+                }
             </select>
         </label>
         <label>
             Porządek:
             <select name="order">
-                <option value="asc">Rosnący</option>
-                <option value="desc">Malejący</option>
+                @if (HttpContext.Request.Query["order"].Contains("desc"))
+                {
+                    <option value="asc">Rosnący</option>
+                    <option value="desc" selected>Malejący</option>
+                }
+                else
+                {
+                    <option value="asc">Rosnący</option>
+                    <option value="desc">Malejący</option>
+                }
             </select>
         </label>
+        <br/>
         <input type="submit" value="Szukaj"/>
-        <input type="reset" value="Wyczyść"/>
     </form>
     <table style="margin: auto">
         <tr>
@@ -94,4 +125,9 @@
             @HttpContext.Request.Query[key].ToString()
         }
     </table>
+    <p>Przejdź do strony:</p>
+    @for (var i = 0; i < pages; i++)
+    {
+        <a href="#" onclick="var queryParams = new URLSearchParams(window.location.search);queryParams.set('page', @i);window.location.href='?'+queryParams.toString();">@(i + 1)</a>
+    }
 </div>
