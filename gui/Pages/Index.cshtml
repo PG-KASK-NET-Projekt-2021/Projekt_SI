@@ -8,9 +8,13 @@
 
     //const string urlPrefix = "http://127.0.0.1:81/api/";
     var urlPrefix = Environment.GetEnvironmentVariable("API_PATH");
+    //const string externalApiPrefix = "http://127.0.0.1:81/api/";
+    var externalApiPrefix = Environment.GetEnvironmentVariable("API_EXTERNAL_PATH");
     const string sensorData = "SensorData?";
     const string sensorDataCount = "SensorData/pages?";
     const string sensorDataCsv = "SensorData/csv?";
+    const string sensorDataJson = "SensorData/json?";
+    const string sensorDashboard = "SensorData/dashboard";
 
     string[] sensorTypes = {"Termometr", "Barometr", "Higrometr", "Fotometr"};
     string[] sensorUnit = {"°C", "hPa", "%", "lm"};
@@ -20,10 +24,7 @@
 
     var streamTask = client.GetStreamAsync(url);
     var sensors = await JsonSerializer.DeserializeAsync<List<SensorQueueData>>(await streamTask);
-
-    var sensorJson = sensors.Where(sensor => sensor.sensorId == 0).Aggregate("", (current, parameter) => current + (current.Length > 0 ? ", " : "") + parameter.value);
-    var sensorDataJson = sensors.Where(sensor => sensor.sensorId == 0).Aggregate("", (current, parameter) => current + (current.Length > 0 ? ", " : "") + "\"" + string.Format("{0:HH:mm:ss}", parameter.date) + "\"");
-
+    var sensorsChart = sensors.OrderBy(e => e.date);
 
     var pages = await JsonSerializer.DeserializeAsync<int>(
         await client.GetStreamAsync(url.Replace(sensorData, sensorDataCount))
@@ -33,6 +34,8 @@
         await client.GetStreamAsync(urlPrefix + "SensorData/sensorIdList")
         );
     sensorIds.Sort();
+
+    var currentPage = HttpContext.Request.Query["page"].ToString().Length > 0 ? int.Parse(HttpContext.Request.Query["page"]) : 1;
 }
 
 <div class="text-center">
@@ -107,7 +110,6 @@
                 }
             </select>
         </label>
-        <br/>
         <input type="submit" value="Szukaj"/>
     </form>
     <table style="margin: auto">
@@ -126,53 +128,103 @@
                 <td>@sensor.value @sensorUnit[sensor.sensorType]</td>
             </tr>
         }
-        @foreach (var key in HttpContext.Request.Query.Keys)
-        {
-            @HttpContext.Request.Query[key].ToString()
-        }
     </table>
     <br/>
     <p>Pobieranie</p>
-    <a href="@url.Replace(sensorData, sensorDataCsv)">CSV</a>
+    <a href="@url.Replace(sensorData, sensorDataCsv).Replace(urlPrefix, externalApiPrefix)">CSV</a>
+    <a href="@url.Replace(sensorData, sensorDataJson).Replace(urlPrefix, externalApiPrefix)">JSON</a>
+    <br/>
+    <br/>
+    @if (pages > 0)
+    {
+        <p>Strona @currentPage/@pages</p>
+    }
+    @if (currentPage > 1)
+    {
+        <a tabindex="0" onclick="goToPage(@(currentPage - 1))">poprzednia</a>
+    }
+    @if (currentPage < pages)
+    {
+        <a tabindex="0" onclick="goToPage(@(currentPage + 1))">następna</a>
+    }
     <p>Przejdź do strony:</p>
     @for (var i = 1; i <= pages; i++)
     {
-        <a onclick="var queryParams = new URLSearchParams(window.location.search);queryParams.set('page', @i);window.location.href='?'+queryParams.toString();">@i</a>
+        <a tabindex="0" onclick="goToPage(@i)">@i</a>
     }
 </div>
+    <h3>Panel</h3>
+    <div style="display: inline-grid;grid-template-columns: auto auto auto auto auto auto; text-align: left;">
+    @foreach (var id in sensorIds)
+    {
+        <div>
+            Sensor @id<br/>
+            Ostatnia wartość: <a id="sensor-value-@id"></a><br/>
+            Średnia: <a id="sensor-average-@id"></a><br/>
+            <br/>
+        </div>
+    }
+    </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<p>Wykres</p>
-<div>
-    <canvas id="myChart"></canvas>
-</div>
-
 <script>
-
-function newDate(days) {
-  return new Date(days);
+function goToPage(i) {
+    var queryParams = new URLSearchParams(window.location.search);
+    queryParams.set('page', i);
+    window.location.href='?'+queryParams.toString();
+}
+function update() {
+    let sensors = [
+    @foreach (var id in sensorIds)
+    {
+        @id
+        @:,
+    }
+    ];
+    let units = ["°C", "hPa", "%", "lm"];
+    $.ajax({
+      url: "@(externalApiPrefix + sensorDashboard)"
+    }).done(function(response) {
+        response.forEach(element => {
+            document.getElementById("sensor-value-"+element.sensorId).innerText = element.last + " " + units[element.sensorType];
+            document.getElementById("sensor-average-"+element.sensorId).innerText = element.average + " " + units[element.sensorType];
+        });
+    });
 }
 
-var config = {
-  type: 'line',
-  data: {
-    labels: [@Html.Raw(sensorDataJson)],
-    datasets: [{
-      label: "My First dataset",
-      data: [@sensorJson],
-    }]
-  },
-  options: {}
-};
-  const myChart = new Chart(
-    document.getElementById('myChart'),
-    config
-  );
-</script>
+setInterval(update,  1000);
 
+</script>
+<h3>Wykres</h3>
+@foreach (var id in sensorIds)
+{
+    if (sensorsChart.Count(sensor => sensor.sensorId == id) > 1)
+    {
+        <div>
+            <canvas id="@("myChart" + id)"></canvas>
+        </div>
+
+        <script>
+      new Chart(
+        document.getElementById("@("myChart" + id)"),
+        {
+              type: 'line',
+              data: {
+                labels: [@Html.Raw(sensorsChart.Where(sensor => sensor.sensorId == id).Aggregate("", (current, parameter) => current + (current.Length > 0 ? ", " : "") + "\"" + string.Format("{0:HH:mm:ss}", parameter.date) + "\""))],
+                datasets: [{
+                  label: "Sensor @id",
+                  data: [@sensorsChart.Where(sensor => sensor.sensorId == id).Aggregate("", (current, parameter) => current + (current.Length > 0 ? ", " : "") + parameter.value)],
+                }]
+              },
+              options: {}
+            }
+      );
+    </script>
+    }
+}
 
 <style>
     td {
-        padding: 5px;
+        padding: 0 5px;
     }
 </style>

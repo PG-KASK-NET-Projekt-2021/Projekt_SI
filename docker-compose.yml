@@ -30,6 +30,7 @@ services:
     build: gui
     environment:
       API_PATH: http://back/api/
+      API_EXTERNAL_PATH: http://127.0.0.1:81/api/
     ports:
       - "82:80"
     depends_on:
@@ -42,6 +43,14 @@ services:
       SI_DELAY_ON_Z: 1
       SI_DELAY_ON_A: 1
       SI_NUMBER_OF_REPETITIONS: -1
+      SI_TERMOMETER_MIN: -4000
+      SI_TERMOMETER_MAX: 5000
+      SI_BAROMETER_MIN: 96000
+      SI_BAROMETER_MAX: 106000
+      SI_HYGROMETER_MIN: 0
+      SI_HYGROMETER_MAX: 10000
+      SI_PHOTOMETER_MIN: 2000
+      SI_PHOTOMETER_MAX: 11000000
     build: Generator
     depends_on:
       - back

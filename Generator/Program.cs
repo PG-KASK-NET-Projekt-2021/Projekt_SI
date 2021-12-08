@@ -163,8 +163,79 @@ namespace Generator
         private const int ServerPort = 1883;
         private readonly MqttFactory _mqttFactory = new MqttFactory();
         private readonly MqttFactory _mqttClient;
-
-        public HttpHandler() { 
+        private int TermMin;
+        private int TermMax;
+        private int BarMin;
+        private int BarMax;
+        private int HigrMin;
+        private int HigrMax;
+        private int FotMin;
+        private int FotMax;
+        public HttpHandler() {
+            if (Environment.GetEnvironmentVariable("SI_TERMOMETER_MIN") != null)
+            {
+                TermMin = int.Parse(Environment.GetEnvironmentVariable("SI_TERMOMETER_MIN"));
+            }
+            else
+            {
+                TermMin = -4000;
+            }
+            if (Environment.GetEnvironmentVariable("SI_TERMOMETER_MAX") != null)
+            {
+                TermMax = int.Parse(Environment.GetEnvironmentVariable("SI_TERMOMETER_MAX"));
+            }
+            else
+            {
+                TermMax = 5000;
+            }
+            if (Environment.GetEnvironmentVariable("SI_BAROMETER_MIN") != null)
+            {
+                BarMin = int.Parse(Environment.GetEnvironmentVariable("SI_BAROMETER_MIN"));
+            }
+            else
+            {
+                BarMin = 96000;
+            }
+            if (Environment.GetEnvironmentVariable("SI_BAROMETER_MAX") != null)
+            {
+                BarMax = int.Parse(Environment.GetEnvironmentVariable("SI_BAROMETER_MAX"));
+            }
+            else
+            {
+                BarMax = 106000;
+            }
+            if (Environment.GetEnvironmentVariable("SI_HYGROMETER_MIN") != null)
+            {
+                HigrMin = int.Parse(Environment.GetEnvironmentVariable("SI_HYGROMETER_MIN"));
+            }
+            else
+            {
+                HigrMin = 0;
+            }
+            if (Environment.GetEnvironmentVariable("SI_HYGROMETER_MAX") != null)
+            {
+                HigrMax = int.Parse(Environment.GetEnvironmentVariable("SI_HYGROMETER_MAX"));
+            }
+            else
+            {
+                HigrMax = 10000;
+            }
+            if (Environment.GetEnvironmentVariable("SI_PHOTOMETER_MIN") != null)
+            {
+                FotMin = int.Parse(Environment.GetEnvironmentVariable("SI_PHOTOMETER_MIN"));
+            }
+            else
+            {
+                FotMin = 2000;
+            }
+            if (Environment.GetEnvironmentVariable("SI_PHOTOMETER_MAX") != null)
+            {
+                FotMax = int.Parse(Environment.GetEnvironmentVariable("SI_PHOTOMETER_MAX"));
+            }
+            else
+            {
+                FotMax = 11000000;
+            }
         }
 
         public static async Task postSensorDataAsync(int sensorId,int sensorType)
@@ -172,20 +243,21 @@ namespace Generator
             //Console.WriteLine(sensorId);
             Random random = new Random();
             //int value = random.Next(0, 1000);
+            HttpHandler handler = new HttpHandler();
             int value;
             switch (sensorType)
             {
                 case 0:
-                    value = random.Next(-4000, 5000);
+                    value = random.Next(handler.TermMin, handler.TermMax);
                     break;
                 case 1:
-                    value = random.Next(96000, 106000);
+                    value = random.Next(handler.BarMin, handler.BarMax);
                     break;
                 case 2:
-                    value = random.Next(0, 10000);
+                    value = random.Next(handler.HigrMin, handler.HigrMax);
                     break;
                 case 3:
-                    value = random.Next(2000, 11000000);
+                    value = random.Next(handler.FotMin, handler.FotMax);
                     break;
                 default:
                     value = -100;
@@ -202,7 +274,7 @@ namespace Generator
 
             var jsonData = JsonConvert.SerializeObject(data);
 
-            //Console.WriteLine(jsonData);
+            Console.WriteLine(jsonData);
 
             var message = new MqttApplicationMessageBuilder()
                      .WithTopic(Topic)
@@ -211,7 +283,7 @@ namespace Generator
                      .WithRetainFlag()
                      .Build();
 
-            HttpHandler handler = new HttpHandler();
+            //HttpHandler handler2 = new HttpHandler();
             var _mqttClient = await handler.CreateConnection();
             await _mqttClient.PublishAsync(message, CancellationToken.None);
 
