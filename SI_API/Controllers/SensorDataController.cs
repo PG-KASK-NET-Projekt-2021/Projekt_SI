@@ -77,10 +77,11 @@ namespace SI_API.Controllers
             if (page == 0)
                 page = 1;
 
-            return _sensorDataService.Get(from, to, typesInt, sensorsInt, sortBy, order, page);
+            return _sensorDataService.GetPage(from, to, typesInt, sensorsInt, sortBy, order, page);
         }
         
         [Route("/api/[controller]/csv")]
+        [Produces("text/csv")]
         [HttpGet]
         public string GetCsv(
             [FromQuery] DateTime from,
@@ -88,18 +89,14 @@ namespace SI_API.Controllers
             [FromQuery] String type,
             [FromQuery] String sensor,
             [FromQuery] String sortBy,
-            [FromQuery] String order,
-            [FromQuery] int page)
+            [FromQuery] String order)
         {
             List<int> typesInt = parseInts(type), sensorsInt  = parseInts(sensor);
             
             if(to.Equals(DateTime.MinValue))
                 to = DateTime.MaxValue;
-            
-            if (page == 0)
-                page = 1;
-            
-            return _sensorDataService.GetCsv(from, to, typesInt, sensorsInt, sortBy, order, page);
+
+            return _sensorDataService.GetCsv(from, to, typesInt, sensorsInt, sortBy, order);
         }
 
         

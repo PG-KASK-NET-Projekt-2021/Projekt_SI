@@ -64,7 +64,20 @@ namespace SI_API.Services
 
             return new Tuple<FilterDefinition<SensorDataModel>, SortDefinition<SensorDataModel>>(filter, sort);
         }
-        public List<SensorDataModel> Get(DateTime from, DateTime to, List<int> type, List<int> sensor, String sortBy, String order, int page)
+        
+        public List<SensorDataModel> Get(DateTime from, DateTime to, List<int> type, List<int> sensor, String sortBy, String order)
+        {
+            var filterTuple = buildFilter(from, to, type, sensor, sortBy, order);
+            var filter = filterTuple.Item1;
+            var sort = filterTuple.Item2;
+            
+            if (sort is null)
+                return _sensorDataModel.Find(filter).ToList();
+            
+            return _sensorDataModel.Find(filter).Sort(sort).ToList();
+        }
+        
+        public List<SensorDataModel> GetPage(DateTime from, DateTime to, List<int> type, List<int> sensor, String sortBy, String order, int page)
         {
             var filterTuple = buildFilter(from, to, type, sensor, sortBy, order);
             var filter = filterTuple.Item1;
@@ -75,16 +88,14 @@ namespace SI_API.Services
             
             return _sensorDataModel.Find(filter).Sort(sort).Skip((page-1) * PageSize).Limit(PageSize).ToList();
         }
-        
-        
-        public string GetCsv(DateTime from, DateTime to, List<int> type, List<int> sensor, String sortBy, String order, int page)
+
+
+        public string GetCsv(DateTime from, DateTime to, List<int> type, List<int> sensor, String sortBy, String order)
         {
-            List<SensorDataModel> list = Get(from, to, type, sensor, sortBy, order, page);
+            List<SensorDataModel> list = Get(from, to, type, sensor, sortBy, order);
             string csv = "Date, SensorType, SensorId, Value\n";
             return csv + String.Join("\n", list.Select(x => x.ToString()).ToArray());
         }
-
-
 
         public int GetPagesNumber(DateTime from, DateTime to, List<int> type, List<int> sensor)
         {
