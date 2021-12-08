@@ -28,6 +28,8 @@ services:
       - mongo
   gui:
     build: gui
+    environment:
+      API_PATH: http://back/api/
     ports:
       - "82:80"
     depends_on:

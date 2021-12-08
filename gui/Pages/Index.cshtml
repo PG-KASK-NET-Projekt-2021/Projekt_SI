@@ -1,11 +1,13 @@
 ﻿@page
+@using System.Web
 @model IndexModel
 @{
     ViewData["Title"] = "Sensors";
 
     var client = new HttpClient();
 
-    const string urlPrefix = "http://127.0.0.1:81/api/";
+    //const string urlPrefix = "http://127.0.0.1:81/api/";
+    var urlPrefix = Environment.GetEnvironmentVariable("API_PATH");
     const string sensorData = "SensorData?";
     const string sensorDataCount = "SensorData/pages?";
     const string sensorDataCsv = "SensorData/csv?";
@@ -162,7 +164,6 @@ var config = {
   },
   options: {}
 };
-
   const myChart = new Chart(
     document.getElementById('myChart'),
     config

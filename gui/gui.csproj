@@ -5,4 +5,8 @@
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     </PropertyGroup>
 
+    <ItemGroup>
+      <PackageReference Include="Microsoft.AspNet.WebPages" Version="3.2.7" />
+    </ItemGroup>
+
 </Project>
