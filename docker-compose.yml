@@ -32,6 +32,13 @@ services:
     depends_on:
       - back
   gen:
+    environment:
+      SI_NUMBER_OF_SENSORS: 30
+      SI_DELAY_ON_X: 2
+      SI_DELAY_ON_Y: 2
+      SI_DELAY_ON_Z: 1
+      SI_DELAY_ON_A: 1
+      SI_NUMBER_OF_REPETITIONS: -1
     build: Generator
     depends_on:
       - back
