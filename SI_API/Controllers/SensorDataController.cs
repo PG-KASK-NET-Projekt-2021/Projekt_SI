@@ -23,6 +23,13 @@ namespace SI_API.Controllers
             _sensorDataService = sensorDataService;
         }
         
+        [Route("/api/[controller]/pages")]
+        [HttpGet]
+        public int GetPages()
+        {
+            return _sensorDataService.GetPagesNumber();
+        }
+        
         [Route("/api/[controller]/sensorIdList")]
         [HttpGet]
         public string GetIds()
@@ -37,8 +44,9 @@ namespace SI_API.Controllers
             [FromQuery] String type,
             [FromQuery] String sensor,
             [FromQuery] String sortBy,
-            [FromQuery] String order
-            )
+            [FromQuery] String order,
+            [FromQuery] int page
+        )
         {
             List<int> typesInt = new List<int>(), sensorsInt  = new List<int>();
             
@@ -58,8 +66,11 @@ namespace SI_API.Controllers
                 sensors = sensor.Split(',');
                 sensorsInt = sensors.Select(x => Int32.Parse(x)).ToList();
             }
-            
-            return _sensorDataService.Get(from, to, typesInt, sensorsInt, sortBy, order);
+
+            if (page == 0)
+                page = 1;
+
+            return _sensorDataService.Get(from, to, typesInt, sensorsInt, sortBy, order, page);
         }
     }
 }

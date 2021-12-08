@@ -8,6 +8,7 @@ namespace SI_API.Services
 {
     public class SensorDataService
     {
+        const int PageSize = 50;
         private readonly IMongoCollection<SensorDataModel> _sensorDataModel;
 
         public SensorDataService()
@@ -30,8 +31,10 @@ namespace SI_API.Services
             return _sensorDataModel.Find(sensorDataModel => true).ToList();
         }
         
-        public List<SensorDataModel> Get(DateTime from, DateTime to, List<int> type, List<int> sensor, String sortBy, String order)
+        
+        public List<SensorDataModel> Get(DateTime from, DateTime to, List<int> type, List<int> sensor, String sortBy, String order, int page)
         {
+
             
             var builder = Builders<SensorDataModel>.Filter;
             var filter = builder.Lte("Date", to) &
@@ -60,12 +63,23 @@ namespace SI_API.Services
                         sort = Builders<SensorDataModel>.Sort.Descending("Date");
                 }
             }
-
-
-            if (sort is null)
-                return _sensorDataModel.Find(filter).ToList();
             
-            return _sensorDataModel.Find(filter).Sort(sort).ToList();
+            
+            
+            if (sort is null)
+                return _sensorDataModel.Find(filter).Skip((page-1) * PageSize).Limit(PageSize).ToList();
+            
+            return _sensorDataModel.Find(filter).Sort(sort).Skip((page-1) * PageSize).Limit(PageSize).ToList();
+        }
+
+
+        public int GetPagesNumber()
+        {
+            long n = _sensorDataModel.CountDocuments(sensorDataModel => true);
+            if (n % PageSize == 0)
+                return (int)(n / PageSize);
+            else
+                return (int)(n / PageSize + 1);
         }
         
 

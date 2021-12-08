@@ -13,6 +13,6 @@ namespace SI_API
 
         public int SensorType { get; set; }
 
-        public float Value { get; set; }
+        public int Value { get; set; }
     }
 }
