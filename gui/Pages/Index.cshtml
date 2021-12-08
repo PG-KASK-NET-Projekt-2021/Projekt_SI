@@ -1,5 +1,4 @@
 ﻿@page
-@using System.Web
 @model IndexModel
 @{
     ViewData["Title"] = "Sensors";
@@ -20,6 +19,10 @@
     var streamTask = client.GetStreamAsync(url);
     var sensors = await JsonSerializer.DeserializeAsync<List<SensorQueueData>>(await streamTask);
 
+    var sensorJson = sensors.Where(sensor => sensor.sensorId == 0).Aggregate("", (current, parameter) => current + (current.Length > 0 ? ", " : "") + parameter.value);
+    var sensorDataJson = sensors.Where(sensor => sensor.sensorId == 0).Aggregate("", (current, parameter) => current + (current.Length > 0 ? ", " : "") + "\"" + string.Format("{0:HH:mm:ss}", parameter.date) + "\"");
+
+
     var pages = await JsonSerializer.DeserializeAsync<int>(
         await client.GetStreamAsync(url.Replace(sensorData, sensorDataCount))
         );
@@ -31,7 +34,6 @@
 }
 
 <div class="text-center">
-    @url
     <form>
         <label>
             Typ czujnika:
@@ -118,7 +120,7 @@
             <tr>
                 <td>@sensorTypes[sensor.sensorType]</td>
                 <td>@sensor.sensorId</td>
-                <td>@String.Format("{0:HH:mm:ss}",sensor.date)</td>
+                <td>@string.Format("{0:HH:mm:ss}", sensor.date)</td>
                 <td>@sensor.value @sensorUnit[sensor.sensorType]</td>
             </tr>
         }
@@ -136,6 +138,37 @@
         <a onclick="var queryParams = new URLSearchParams(window.location.search);queryParams.set('page', @i);window.location.href='?'+queryParams.toString();">@i</a>
     }
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<p>Wykres</p>
+<div>
+    <canvas id="myChart"></canvas>
+</div>
+
+<script>
+
+function newDate(days) {
+  return new Date(days);
+}
+
+var config = {
+  type: 'line',
+  data: {
+    labels: [@Html.Raw(sensorDataJson)],
+    datasets: [{
+      label: "My First dataset",
+      data: [@sensorJson],
+    }]
+  },
+  options: {}
+};
+
+  const myChart = new Chart(
+    document.getElementById('myChart'),
+    config
+  );
+</script>
+
 
 <style>
     td {
